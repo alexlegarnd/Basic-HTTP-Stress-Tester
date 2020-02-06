@@ -17,7 +17,7 @@ Redhat, CentOS
 sudo yum install python3
 ```
 Windows and macOS
-You can download the installer on [here for Windows](www.python.org/downloads/windows/) and [here for macOS](https://www.python.org/downloads/mac-osx/)
+You can download the installer on [here for Windows](https://www.python.org/downloads/windows/) and [here for macOS](https://www.python.org/downloads/mac-osx/)
 
 ## Example and minimal arguments
 ```sh
