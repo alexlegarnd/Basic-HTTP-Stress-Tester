@@ -21,12 +21,12 @@ You can download the installer on [here for Windows](https://www.python.org/down
 
 ## Example and minimal arguments
 ```sh
-python3 http_stress_test.py -h host [-p port] -pth path [-t number_of_thread] [-tm timeout_in_second]
+py main.py -h host -p path [--port port] [-t number_of_thread] [-tm timeout_in_second] [--ssl [--allow-self-signed]]
 ```
-Your command must have -h (host IP or domain) and -pth (path to the resource)
+Your command must have -h (host IP or domain) and -p (path to the resource)
 
 Example:
 ```sh
-python3 http_stress_test.py -h www.google.fr -pth / -t 10
+py main.py -h www.google.fr -p / -t 10
 ```
 
