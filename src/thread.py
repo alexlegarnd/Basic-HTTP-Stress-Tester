@@ -7,7 +7,7 @@ import ssl
 import encodings.idna
 from rich.console import Console
 
-console = Console(highlight=False)
+console = None
 
 class StressThread (threading.Thread):
 
