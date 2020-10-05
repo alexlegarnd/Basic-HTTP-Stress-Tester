@@ -11,16 +11,17 @@ console = None
 
 class StressThread (threading.Thread):
 
-    def __init__(self, host, port, path, timeout, n, allow_ssl, self_signed, version):
+    def __init__(self, options, n, version):
         threading.Thread.__init__(self)
         self.user_agent = "PyStressTest/{}({} {} {})".format(version, platform.system(), os.name, platform.release())
-        self.host = host
-        self.port = port
-        self.path = path
-        self.timeout = timeout
+        self.host = options.host
+        self.port = options.port
+        self.path = options.path
+        self.timeout = options.timeout
         self.n = n
-        self.allow_ssl = allow_ssl
-        self.self_signed = self_signed
+        self.allow_ssl = options.allow_ssl
+        self.self_signed = options.self_signed
+        self.headers = options.headers
         self.success = False
         self.time = 0
 
@@ -35,8 +36,8 @@ class StressThread (threading.Thread):
                     c = http.client.HTTPSConnection(self.host, self.port, timeout=self.timeout, key_file=None, cert_file=None)
             else:
                 c = http.client.HTTPConnection(self.host, self.port, timeout=self.timeout)
-            headers = {"User-Agent": self.user_agent}
-            c.request(method="GET", url=self.path, headers=headers)
+            self.headers["User-Agent"] = self.user_agent
+            c.request(method="GET", url=self.path, headers=self.headers)
             res = c.getresponse()
             processed = round((time.time() - now) * 1000)
             self.print_result(res.status, res.reason, processed)

@@ -8,11 +8,12 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 from thread import StressThread
+from parameters import Options
 import thread
 import basic_producer_consumer
 
 console = Console(highlight=False)
-VERSION = "1.3.2"
+VERSION = "1.4"
 thread.console = console
 
 def main():
@@ -24,33 +25,35 @@ def main():
         show_version()
         return
 
-    host = get_args("-h", True, 1001, 1002)
-    allow_ssl = get_flag("--ssl")
-    port = int(get_args("--port", False, 1003, 1004, "80"))
-    path = get_args("-p", True, 1005, 1006)
-    thread_number = int(get_args("-t", False, 1007, 1008, "5"))
-    timeout = int(get_args("-tm", False, 1009, 1010, "10"))
-    one_by_one = get_flag("--one-by-one")
-    ignore_available_threads = get_flag("--ignore-available-threads")
-    self_signed = get_flag("--allow-self-signed")
+    options = Options()
+    options.host = get_args("-h", True, 1001, 1002)
+    options.allow_ssl = get_flag("--ssl")
+    options.port = int(get_args("--port", False, 1003, 1004, "80"))
+    options.path = get_args("-p", False, 1005, 1006, "/")
+    options.thread_number = int(get_args("-t", False, 1007, 1008, "5"))
+    options.timeout = int(get_args("-tm", False, 1009, 1010, "10"))
+    options.one_by_one = get_flag("--one-by-one")
+    options.ignore_available_threads = get_flag("--ignore-available-threads")
+    options.self_signed = get_flag("--allow-self-signed")
+    options.headers = get_headers()
 
-    if one_by_one and ignore_available_threads:
+    if options.one_by_one and options.ignore_available_threads:
         console.print("[red]Error[/]: ambigous arguments, --one-by-one and --ignore-available-threads cannot be in the same command", style="bold")
         return
 
-    start(host, port, path, timeout, thread_number, allow_ssl, self_signed, one_by_one, ignore_available_threads)
+    start(options)
 
-def start(host, port, path, timeout, thread_number, allow_ssl, self_signed, one_by_one = False, ignore_available_threads = False):
+def start(options):
     thread_array = []
-    for i in range(0, thread_number):
-        thread_array.append(StressThread(host, port, path, timeout, i, allow_ssl, self_signed, VERSION))
-    if one_by_one:
+    for i in range(0, options.thread_number):
+        thread_array.append(StressThread(options, i, VERSION))
+    if options.one_by_one:
         start_one_by_one(thread_array)
-    elif ignore_available_threads:
+    elif options.ignore_available_threads:
         start_all(thread_array)
     else:
         basic_producer_consumer.start(thread_array)
-    show_stat(thread_array, (timeout * 1000))
+    show_stat(thread_array, (options.timeout * 1000))
 
 # Run requests in one thread
 def start_one_by_one(threads):
@@ -113,6 +116,7 @@ def show_help():
     console.print("  --ignore-available-threads   Ignore physical number of threads and start all request in the same time")
     console.print("  --ssl                        Use HTTPS/SSL")
     console.print("  --allow-self-signed          Allow self signed SSL certificate")
+    console.print("  --header key=value           Send a custom header (To add several headers, add several times the argument --header)")
     console.print("  --help")
     console.print("  /?                           Show this page")
     console.print("  --version                    Get information about the application and the system")
@@ -149,6 +153,16 @@ def get_args(header, important, notfoundcode, valuenotfoundcode, default = ""):
             show_help()
             sys.exit(notfoundcode)
     return default
+
+def get_headers():
+    headers = {}
+    indices = [i for i, x in enumerate(sys.argv) if x == "--header"]
+    for i in indices:
+        if (len(sys.argv) > (i + 1)):
+            h_raw = sys.argv[i + 1]
+            key, value = h_raw.split('=', 1)
+            headers[key] = value
+    return headers
 
 def get_flag(header):
     return (header in sys.argv)
