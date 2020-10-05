@@ -26,7 +26,7 @@ class StressThread (threading.Thread):
 
     def run(self):
         try:
-            print("Request {}: GET on {}".format(self.n, self.path))
+            console.print("Request {}: GET on {}".format(self.n, self.path))
             now = time.time()
             if self.allow_ssl:
                 if self.self_signed:
@@ -45,7 +45,7 @@ class StressThread (threading.Thread):
                 self.success = True
         except Exception as e:
             console.print("Request {}: [bold red]{}[/]".format(self.n, e))
-            print()
+            console.print()
     
     def is_succeeded(self):
         return self.success

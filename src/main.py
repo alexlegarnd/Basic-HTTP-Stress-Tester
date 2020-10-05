@@ -12,7 +12,7 @@ import thread
 import basic_producer_consumer
 
 console = Console(highlight=False)
-VERSION = "1.3"
+VERSION = "1.3.1"
 thread.console = console
 
 def main():
