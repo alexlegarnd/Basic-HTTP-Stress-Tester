@@ -28,7 +28,7 @@ class ProducerThread(threading.Thread):
                     q.put(self.threads[i])
                     i += 1
             while q.qsize() > 0:
-                time.sleep(1)
+                time.sleep(0.1)
         except:
             pass
         not_finished = False
