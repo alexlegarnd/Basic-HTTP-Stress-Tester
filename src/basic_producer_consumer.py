@@ -4,6 +4,8 @@ import queue
 import os
 import sys
 
+console = None
+
 def get_available_threads():
     if sys.platform == 'win32':
         return (int)(os.environ['NUMBER_OF_PROCESSORS'])
@@ -12,7 +14,6 @@ def get_available_threads():
 
 SIZE = get_available_threads()
 q = queue.Queue()
-not_finished = True
 
 class ProducerThread(threading.Thread):
     def __init__(self, threads):
@@ -20,7 +21,6 @@ class ProducerThread(threading.Thread):
         self.threads = threads
 
     def run(self):
-        global not_finished
         try:
             i = 0
             while i < len(self.threads):
@@ -29,31 +29,48 @@ class ProducerThread(threading.Thread):
                     i += 1
             while q.qsize() > 0:
                 time.sleep(0.1)
-        except:
-            pass
-        not_finished = False
+        except Exception as e:
+                console.print("[red]Error[/]: {}".format(e), style="bold")
 
 
 class ConsumerThread(threading.Thread):
     def __init__(self):
         super(ConsumerThread,self).__init__()
+        self.alive = True
+
+    def stop(self):
+        self.alive = False
 
     def run(self):
-        while not_finished:
-            if q.qsize() > 0:
-                t = q.get()
-                t.start()
-                t.join()
+        while self.alive:
+            try:
+                if q.qsize() > 0:
+                    t = q.get(False)
+                    t.start()
+                    if t.is_alive():
+                        t.join(t.timeout)
+            except queue.Empty as e:
+                pass
+            except Exception as e:
+                console.print("[orange3]Warning[/]: {}".format(e), style="bold")
 
 def start(threads):
+    process(threads, get_available_threads())
+    
+def start_custom_limit(threads, limit):
+    process(threads, limit)
+
+def process(threads, limit):
     p = ProducerThread(threads)
     p.start()
     consumers = []
-    for _ in range(get_available_threads()):
+    for _ in range(limit):
         c = ConsumerThread()
         consumers.append(c)
         c.start()
     p.join()
     for c in consumers:
-        c.join()
-    
+        c.stop()
+    for c in consumers:
+        if c.is_alive():
+            c.join()

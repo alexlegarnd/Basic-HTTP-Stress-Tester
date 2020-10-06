@@ -7,10 +7,11 @@ class Options:
         self.allow_ssl = False
         self.port = 80
         self.path = "/"
-        self.thread_number = 5
+        self.request_number = 5
+        self.limit = 1500
         self.timeout = 10
         self.one_by_one = False
-        self.ignore_available_threads = False
+        self.no_limit = False
         self.self_signed = False
         self.headers = {}
 

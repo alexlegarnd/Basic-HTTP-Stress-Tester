@@ -13,8 +13,9 @@ import thread
 import basic_producer_consumer
 
 console = Console(highlight=False)
-VERSION = "1.4"
+VERSION = "1.4.1"
 thread.console = console
+basic_producer_consumer.console = console
 
 def main():
     if ((len(sys.argv) >= 2) and (("--help" in sys.argv) or ("/?" in sys.argv))):    
@@ -28,29 +29,34 @@ def main():
     options = Options()
     options.host = get_args("-h", True, 1001, 1002)
     options.allow_ssl = get_flag("--ssl")
-    options.port = int(get_args("--port", False, 1003, 1004, "80"))
+    options.port = int(get_args("--port", False, 1003, 1004, ("80", "443")[options.allow_ssl]))
     options.path = get_args("-p", False, 1005, 1006, "/")
-    options.thread_number = int(get_args("-t", False, 1007, 1008, "5"))
-    options.timeout = int(get_args("-tm", False, 1009, 1010, "10"))
+    options.request_number = int(get_args("-r", False, 1007, 1008, "5"))
+    options.limit = int(get_args("--thread-count", False, 1007, 1008, "1500"))
+    options.timeout = int(get_args("--timeout", False, 1009, 1010, "10"))
     options.one_by_one = get_flag("--one-by-one")
-    options.ignore_available_threads = get_flag("--ignore-available-threads")
+    options.no_limit = get_flag("--no-limit")
     options.self_signed = get_flag("--allow-self-signed")
     options.headers = get_headers()
 
-    if options.one_by_one and options.ignore_available_threads:
-        console.print("[red]Error[/]: ambigous arguments, --one-by-one and --ignore-available-threads cannot be in the same command", style="bold")
+    if options.no_limit and (options.request_number < options.limit):
+        console.print("[orange3]Warning[/]: Too much thread, starting only {} threads".format(options.request_number), style="bold")
+        options.limit = options.request_number
+
+    if options.one_by_one and options.no_limit:
+        console.print("[red]Error[/]: ambigous arguments, --one-by-one and --no-limit cannot be in the same command", style="bold")
         return
 
     start(options)
 
 def start(options):
     thread_array = []
-    for i in range(0, options.thread_number):
+    for i in range(0, options.request_number):
         thread_array.append(StressThread(options, i, VERSION))
     if options.one_by_one:
         start_one_by_one(thread_array)
-    elif options.ignore_available_threads:
-        start_all(thread_array)
+    elif options.no_limit:
+        basic_producer_consumer.start_custom_limit(thread_array, options.limit)
     else:
         basic_producer_consumer.start(thread_array)
     show_stat(thread_array, (options.timeout * 1000))
@@ -59,19 +65,6 @@ def start(options):
 def start_one_by_one(threads):
     for t in threads:
         t.run()
-
-# Start all requests in the same time
-def start_all(threads):
-    for t in threads:
-        started = False
-        while not started:
-            try:
-                t.start()
-                started = True
-            except:
-                time.sleep(1)
-    for t in threads:
-        t.join()
 
 def show_stat(tArray, timeoutInMs):
     total, succeeded = [0, 0]
@@ -107,19 +100,20 @@ def show_help():
     console.print("         py main.py -h www.google.fr -p / -t 10")
     console.print("")
     console.print("Available arguments:")
-    console.print("  -h host                      The server IP or domain name")
-    console.print("  -p path                      The path of the HTTP resource")
-    console.print("  --port port                  The server HTTP port")
-    console.print("  -t thread                    Number of threads")
-    console.print("  -tm second                   Timeout of the request")
-    console.print("  --one-by-one                 Send request one by one")
-    console.print("  --ignore-available-threads   Ignore physical number of threads and start all request in the same time")
-    console.print("  --ssl                        Use HTTPS/SSL")
-    console.print("  --allow-self-signed          Allow self signed SSL certificate")
-    console.print("  --header key=value           Send a custom header (To add several headers, add several times the argument --header)")
+    console.print("  -h host                              The server IP or domain name")
+    console.print("  -p path                              The path of the HTTP resource")
+    console.print("  -r <number_of_request>               Number of request")
+    console.print("  --port port                          The server HTTP port")
+    console.print("  --timeout <seconds>                  Timeout of the request")
+    console.print("  --thread-count <number_of_threads>   Number of request")
+    console.print("  --one-by-one                         Send request one by one")
+    console.print("  --no-limit                           Disable CPU physical threads limit")
+    console.print("  --ssl                                Use HTTPS/SSL")
+    console.print("  --allow-self-signed                  Allow self signed SSL certificate")
+    console.print("  --header \"key=value\"                 Send a custom header (To add several headers, add several times the argument --header)")
     console.print("  --help")
-    console.print("  /?                           Show this page")
-    console.print("  --version                    Get information about the application and the system")
+    console.print("  /?                                   Show this page")
+    console.print("  --version                            Get information about the application and the system")
 
 def show_author():
     console.print("[bold]Basic HTTP Stress test[/]")
