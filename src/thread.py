@@ -1,10 +1,11 @@
-import threading
-import http.client
-import platform
-import time
-import os
-import ssl
 import encodings.idna
+import http.client
+import os
+import platform
+import ssl
+import threading
+import time
+
 from rich.console import Console
 
 console = None

@@ -1,21 +1,22 @@
 #!/usr/bin/python3
 
+import os
+import platform
 import sys
 import time
-import platform
-import os
+
 from rich import box
 from rich.console import Console
 from rich.table import Table
-from thread import StressThread
-from parameters import Options
+
+import core
 import thread
-import basic_producer_consumer
+from parameters import Options
+from thread import StressThread
 
 console = Console(highlight=False)
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 thread.console = console
-basic_producer_consumer.console = console
 
 def main():
     if ((len(sys.argv) >= 2) and (("--help" in sys.argv) or ("/?" in sys.argv))):    
@@ -54,17 +55,12 @@ def start(options):
     for i in range(0, options.request_number):
         thread_array.append(StressThread(options, i, VERSION))
     if options.one_by_one:
-        start_one_by_one(thread_array)
+        core.start_one_by_one(thread_array)
     elif options.no_limit:
-        basic_producer_consumer.start_custom_limit(thread_array, options.limit)
+        core.start_custom_limit(thread_array, options.limit)
     else:
-        basic_producer_consumer.start(thread_array)
+        core.start(thread_array)
     show_stat(thread_array, (options.timeout * 1000))
-
-# Run requests in one thread
-def start_one_by_one(threads):
-    for t in threads:
-        t.run()
 
 def show_stat(tArray, timeoutInMs):
     total, succeeded = [0, 0]
