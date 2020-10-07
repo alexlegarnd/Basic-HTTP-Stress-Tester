@@ -1,3 +1,4 @@
+
 # Basic HTTP Stress test
 This is a little script wrote in Python 3. It's just for simulating multiple connection in same time.
 ## How to use it
@@ -29,4 +30,5 @@ Example:
 ```sh
 py main.py -h www.google.fr -p / -t 10
 ```
-
+## Download
+Portable version with Python 3.9 executable included : [Download here](https://download.alexisdelhaie.ovh/Home/DetailSoftware/UHlTdHJlc3NUZXN0IC0gSFRUUCBBUEkgU3RyZXNzIHRlc3QgKEFyY2hpdmUgN3ppcCk-) (for Windows only)
