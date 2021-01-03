@@ -31,4 +31,4 @@ Example:
 py main.py -h www.google.fr -p / -t 10
 ```
 ## Download
-Portable version with Python 3.9 executable included : [Download here](https://download.alexisdelhaie.ovh/Home/DetailSoftware/UHlTdHJlc3NUZXN0IC0gSFRUUCBBUEkgU3RyZXNzIHRlc3QgKEFyY2hpdmUgN3ppcCk-) (for Windows only)
+Portable version with Python 3.9 executable included : [Download here](http://alexisdelhaie.ovh/dlcenter/pystresstest.7z) (for Windows only)
